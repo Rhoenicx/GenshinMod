@@ -1,0 +1,6 @@
+author = Verveine, Amber, Rhoenicx
+displayName = Echoes of Teyvat
+hideCode = true
+hideResources = true
+homepage = https://discord.gg/pgcWh7xmZd
+version = 0.1

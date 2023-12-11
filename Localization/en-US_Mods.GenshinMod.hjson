@@ -1,0 +1,213 @@
+# This file will automatically update with entries for new content after a build and reload
+
+Items: {
+	test: {
+		DisplayName: test
+		Tooltip: ""
+	}
+
+	CharacterSwitcher: {
+		DisplayName: Character Switcher
+		Tooltip: ""
+	}
+
+	CharacterAdder: {
+		DisplayName: Character Adder
+		Tooltip: ""
+	}
+
+	CharacterRemover: {
+		DisplayName: Character Remover
+		Tooltip: ""
+	}
+
+	CharacterToTeam: {
+		DisplayName: Character To Team
+		Tooltip: ""
+	}
+
+	Klee_Head: {
+		DisplayName: Klee_ Head
+		Tooltip: ""
+	}
+
+	Klee_Body: {
+		DisplayName: Klee_ Body
+		Tooltip: ""
+	}
+
+	Klee_Legs: {
+		DisplayName: Klee_ Legs
+		Tooltip: ""
+	}
+
+	Barbara_Body: {
+		DisplayName: Barbara_ Body
+		Tooltip: ""
+	}
+
+	Barbara_Head: {
+		DisplayName: Barbara_ Head
+		Tooltip: ""
+	}
+
+	Barbara_Legs: {
+		DisplayName: Barbara_ Legs
+		Tooltip: ""
+	}
+
+	Klee_Backpack: {
+		DisplayName: Klee_ Backpack
+		Tooltip: ""
+	}
+
+	Amber_Body: {
+		DisplayName: Amber_ Body
+		Tooltip: ""
+	}
+
+	Amber_Head: {
+		DisplayName: Amber_ Head
+		Tooltip: ""
+	}
+
+	Amber_Legs: {
+		DisplayName: Amber_ Legs
+		Tooltip: ""
+	}
+
+	Jean_Body: {
+		DisplayName: Jean_ Body
+		Tooltip: ""
+	}
+
+	Jean_Legs: {
+		DisplayName: Jean_ Legs
+		Tooltip: ""
+	}
+
+	Albedo_Body: {
+		DisplayName: Albedo_ Body
+		Tooltip: ""
+	}
+
+	Albedo_Legs: {
+		DisplayName: Albedo_ Legs
+		Tooltip: ""
+	}
+
+	Kaeya_Body: {
+		DisplayName: Kaeya_ Body
+		Tooltip: ""
+	}
+
+	Kaeya_Legs: {
+		DisplayName: Kaeya_ Legs
+		Tooltip: ""
+	}
+
+	Lisa_Body: {
+		DisplayName: Lisa_ Body
+		Tooltip: ""
+	}
+
+	Lisa_Head: {
+		DisplayName: Lisa_ Head
+		Tooltip: ""
+	}
+
+	Lisa_Legs: {
+		DisplayName: Lisa_ Legs
+		Tooltip: ""
+	}
+
+	Noelle_Body: {
+		DisplayName: Noelle_ Body
+		Tooltip: ""
+	}
+
+	Noelle_Head: {
+		DisplayName: Noelle_ Head
+		Tooltip: ""
+	}
+
+	Noelle_Legs: {
+		DisplayName: Noelle_ Legs
+		Tooltip: ""
+	}
+}
+
+Configs: {
+	GenshinClientConfig: {
+		DisplayName: Genshin Client Config
+
+		Headers: {
+			Misc: Misc Header
+			Cheats: Cheats Header
+		}
+
+		EnableBurstQuotes: {
+			Label: Enable Burst Quotes
+			Tooltip: ""
+		}
+
+		IsGenshinCreatedPlayer: {
+			Label: Is Genshin Created Player
+			Tooltip: ""
+		}
+
+		EnableTeamDebugger: {
+			Label: Enable Team Debugger
+			Tooltip: ""
+		}
+
+		GenshinModeEnabled: {
+			Label: Genshin Mode Enabled
+			Tooltip: ""
+		}
+	}
+
+	GenshinConfigClient: {
+		DisplayName: Genshin Config Client
+
+		Headers: {
+			Misc: Misc Header
+			Cheats: Cheats Header
+		}
+
+		EnableBurstQuotes: {
+			Label: Enable Burst Quotes
+			Tooltip: ""
+		}
+
+		MaxTeamSize: {
+			Label: Max Team Size
+			Tooltip: ""
+		}
+
+		GenshinModeEnabled: {
+			Label: Genshin Mode Enabled
+			Tooltip: ""
+		}
+
+		EnableTeamDebugger: {
+			Label: Enable Team Debugger
+			Tooltip: ""
+		}
+	}
+
+	GenshinConfigServer: {
+		DisplayName: Genshin Config Server
+		Headers.Cheats: Cheats Header
+
+		MaxTeamSize: {
+			Label: Max Team Size
+			Tooltip: ""
+		}
+
+		MinCharactersPerPlayer: {
+			Label: Min Characters Per Player
+			Tooltip: ""
+		}
+	}
+}
