@@ -14,10 +14,9 @@ public class Lisa_Head : ModItem
     public override void SetStaticDefaults()
     {
         // Register Lisa's Head equip slot
-        GenshinPlayerSystem.RegisterEquipSlot(EquipType.Head, Item.bodySlot, new GenshinEquipSettings()
+        GenshinPlayerSystem.RegisterEquipSlot(EquipType.Head, Item.headSlot, new GenshinEquipSettings()
         {
-            characterID = GenshinCharacterID.Lisa,
-            hatOffset = new Dictionary<int, Vector2> { { -1, new Vector2(0f, -2f) } }
+            characterID = GenshinCharacterID.Lisa
         });
 
         ArmorIDs.Head.Sets.DrawFullHair[Item.headSlot] = true;

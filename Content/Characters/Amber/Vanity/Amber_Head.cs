@@ -14,7 +14,7 @@ public class Amber_Head : ModItem
     public override void SetStaticDefaults()
     {
         // Register Amber's Head equip slot
-        GenshinPlayerSystem.RegisterEquipSlot(EquipType.Head, Item.bodySlot, new GenshinEquipSettings()
+        GenshinPlayerSystem.RegisterEquipSlot(EquipType.Head, Item.headSlot, new GenshinEquipSettings()
         {
             characterID = GenshinCharacterID.Amber,
             hatOffset = new Dictionary<int, Vector2> { { -1, new Vector2(0f, -2f) } }

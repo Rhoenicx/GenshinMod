@@ -640,11 +640,33 @@ public class GenshinPlayerSystem : ModSystem
                     return CharacterAndPlayerTextures[characterID][textureType];
                 }
 
-            case GenshinTextureType.Player_SkinTorso:
-            case GenshinTextureType.Player_SkinHandsBack:
-            case GenshinTextureType.Player_SkinHandsFront:
-            case GenshinTextureType.Player_SkinArmsAndHands:
+            case GenshinTextureType.Player_SkinHead:
+            case GenshinTextureType.Mannequin_SkinHead:
                 {
+                    // Fail-safe
+                    if (!IsGenshinHeadType(drawInfo.drawPlayer.head))
+                    {
+                        return _emptyTexture;
+                    }
+
+                    // Grab the equipped character's texture ID from the EquipSettings of this head piece
+                    GenshinCharacterID characterID = HeadSlots[drawInfo.drawPlayer.head].characterID;
+
+                    // Load the player skin textures
+                    LoadGenshinTexture(characterID, textureType);
+                    return CharacterAndPlayerTextures[characterID][textureType];
+                }
+
+            case GenshinTextureType.Player_SkinTorso:
+            case GenshinTextureType.Mannequin_SkinTorso:
+            case GenshinTextureType.Player_SkinHandsBack:
+            case GenshinTextureType.Mannequin_SkinHandsBack:
+            case GenshinTextureType.Player_SkinHandsFront:
+            case GenshinTextureType.Mannequin_SkinHandsFront:
+            case GenshinTextureType.Player_SkinArmsAndHands:
+            case GenshinTextureType.Mannequin_SkinArmsAndHands:
+                {
+                    // Fail-safe
                     if (!IsGenshinBodyType(drawInfo.drawPlayer.body))
                     {
                         return _emptyTexture;
@@ -653,21 +675,15 @@ public class GenshinPlayerSystem : ModSystem
                     // Grab the equipped character's texture ID from the EquipSettings of this body piece
                     GenshinCharacterID characterID = BodySlots[drawInfo.drawPlayer.body].characterID;
 
-                    //TODO mannequin/womannequin textures
-                    if (drawInfo.skinVar is 10 or 11
-                        || drawInfo.drawPlayer.isDisplayDollOrInanimate
-                        || drawInfo.drawPlayer.isHatRackDoll)
-                    {
-                        return _emptyTexture;
-                    }
-
                     // Load the player skin textures
                     LoadGenshinTexture(characterID, textureType);
                     return CharacterAndPlayerTextures[characterID][textureType];
                 }
 
             case GenshinTextureType.Player_SkinLegs:
+            case GenshinTextureType.Mannequin_SkinLegs:
                 {
+                    // Fail-safe
                     if (!IsGenshinLegsType(drawInfo.drawPlayer.legs))
                     {
                         return _emptyTexture;
@@ -675,14 +691,6 @@ public class GenshinPlayerSystem : ModSystem
 
                     // Grab the equipped character's texture ID from the EquipSettings of this body piece
                     GenshinCharacterID characterID = LegsSlots[drawInfo.drawPlayer.legs].characterID;
-
-                    //TODO mannequin/womannequin textures
-                    if (drawInfo.skinVar is 10 or 11
-                        || drawInfo.drawPlayer.isDisplayDollOrInanimate
-                        || drawInfo.drawPlayer.isHatRackDoll)
-                    {
-                        return _emptyTexture;
-                    }
 
                     // Load the player skin textures
                     LoadGenshinTexture(characterID, textureType);
@@ -717,6 +725,12 @@ public class GenshinPlayerSystem : ModSystem
             && player.TryGetModPlayer(out GenshinPlayer genshinPlayer)
             && genshinPlayer.CurrentCharacterID != GenshinCharacterID.Terrarian
             && genshinPlayer.GenshinModeEnabled;
+    }
+
+    public static bool InanimatePlayerActive(ref PlayerDrawSet drawInfo)
+    {
+        return (drawInfo.skinVar == 10 || drawInfo.skinVar == 11)
+            && (drawInfo.drawPlayer.isDisplayDollOrInanimate || drawInfo.drawPlayer.isHatRackDoll);
     }
 
     // Checks if the drawPlayer is currently wearing a genshin equiptexture head piece
@@ -774,11 +788,14 @@ public class GenshinPlayerSystem : ModSystem
                 // Prepare texture types to insert
                 GenshinTextureType playerTexture = GenshinTextureType.None;
                 GenshinTextureType characterTexture = GenshinTextureType.None;
+                GenshinTextureType mannequinTexture = GenshinTextureType.None;
 
                 switch (vanillaTextureID)
                 {
                     case 0:
+                        playerTexture = GenshinTextureType.Player_SkinHead;
                         characterTexture = GenshinTextureType.Character_SkinHead;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinHead;
                         break;
 
                     case 1:
@@ -792,26 +809,31 @@ public class GenshinPlayerSystem : ModSystem
                     case 3:
                         playerTexture = GenshinTextureType.Player_SkinTorso;
                         characterTexture = GenshinTextureType.Character_SkinTorso;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinTorso;
                         break;
 
                     case 5:
                         playerTexture = GenshinTextureType.Player_SkinHandsBack;
                         characterTexture = GenshinTextureType.Character_SkinHandsBack;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinHandsBack;
                         break;
 
                     case 7:
                         playerTexture = GenshinTextureType.Player_SkinArmsAndHands;
                         characterTexture = GenshinTextureType.Character_SkinArmsAndHands;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinArmsAndHands;
                         break;
 
                     case 9:
                         playerTexture = GenshinTextureType.Player_SkinHandsFront;
                         characterTexture = GenshinTextureType.Character_SkinHandsFront;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinHandsFront;
                         break;
 
                     case 10:
                         playerTexture = GenshinTextureType.Player_SkinLegs;
                         characterTexture = GenshinTextureType.Character_SkinLegs;
+                        mannequinTexture = GenshinTextureType.Mannequin_SkinLegs;
                         break;
 
                     case 15:
@@ -829,6 +851,7 @@ public class GenshinPlayerSystem : ModSystem
                     // Define branching labels
                     ILLabel branchPlayer = il.DefineLabel();
                     ILLabel branchCharacter = il.DefineLabel();
+                    ILLabel branchMannequin = il.DefineLabel();
                     ILLabel end = il.DefineLabel();
 
                     // Check if we need to apply a CharacterActive check here
@@ -845,7 +868,7 @@ public class GenshinPlayerSystem : ModSystem
                     }
 
                     // Check if we need to apply a leg/torso check here
-                    if (playerTexture != GenshinTextureType.None)
+                    if (playerTexture != GenshinTextureType.None || mannequinTexture != GenshinTextureType.None)
                     {
                         // Push the PlayerDrawSet to the stack
                         c.Emit(OpCodes.Ldarg_0);
@@ -855,6 +878,11 @@ public class GenshinPlayerSystem : ModSystem
                         {
                             // Need to check for a leg type
                             c.EmitDelegate<BoolAction<PlayerDrawSet>>(GenshinLegTypeActive);
+                        }
+                        else if (playerTexture == GenshinTextureType.Player_SkinHead)
+                        {
+                            // Need to check for a head type
+                            c.EmitDelegate<BoolAction<PlayerDrawSet>>(GenshinHeadTypeActive);
                         }
                         else
                         {
@@ -897,7 +925,7 @@ public class GenshinPlayerSystem : ModSystem
                         }
 
                         // Check whether we also inserted a player branch
-                        if (playerTexture != GenshinTextureType.None)
+                        if (playerTexture != GenshinTextureType.None || mannequinTexture != GenshinTextureType.None)
                         {
                             // In that case we need to jump over it.
                             // Go to the end branch
@@ -906,28 +934,69 @@ public class GenshinPlayerSystem : ModSystem
                     }
 
                     // Check if we need the player branch
-                    if (playerTexture != GenshinTextureType.None)
+                    if (playerTexture != GenshinTextureType.None || mannequinTexture != GenshinTextureType.None)
                     {
                         // Mark the player branch here
                         c.MarkLabel(branchPlayer);
 
-                        // Push the PlayerDrawSet to the stack
-                        c.Emit(OpCodes.Ldarg_0);
-
-                        // Push our playerTexture id to the stack
-                        c.Emit(OpCodes.Ldc_I4, (int)playerTexture);
-
-                        // Call our GetCharacterTexture method to place the right texture on the stack
-                        c.EmitDelegate<TexAction<PlayerDrawSet>>(GetCharacterTexture);
-
-                        if (textureValue)
+                        if (playerTexture != GenshinTextureType.None && mannequinTexture != GenshinTextureType.None)
                         {
-                            c.Emit(OpCodes.Callvirt, typeof(Asset<Texture2D>).GetMethod("get_Value", BindingFlags.Public | BindingFlags.Instance));
+                            // Push the PlayerDrawSet to the stack
+                            c.Emit(OpCodes.Ldarg_0);
+
+                            // Determine if this player is Inanimate
+                            c.EmitDelegate<BoolAction<PlayerDrawSet>>(InanimatePlayerActive);
+
+                            // Go to the mannequin branch if true
+                            c.Emit(OpCodes.Brtrue, branchMannequin);
+                        }
+
+                        if (playerTexture != GenshinTextureType.None)
+                        {
+                            // Push the PlayerDrawSet to the stack
+                            c.Emit(OpCodes.Ldarg_0);
+
+                            // Push our playerTexture id to the stack
+                            c.Emit(OpCodes.Ldc_I4, (int)playerTexture);
+
+                            // Call our GetCharacterTexture method to place the right texture on the stack
+                            c.EmitDelegate<TexAction<PlayerDrawSet>>(GetCharacterTexture);
+
+                            if (textureValue)
+                            {
+                                c.Emit(OpCodes.Callvirt, typeof(Asset<Texture2D>).GetMethod("get_Value", BindingFlags.Public | BindingFlags.Instance));
+                            }
+                        }
+
+                        if (playerTexture != GenshinTextureType.None && mannequinTexture != GenshinTextureType.None)
+                        {
+                            // Go to the end branch
+                            c.Emit(OpCodes.Br, end);
+                        }
+
+                        if (mannequinTexture != GenshinTextureType.None)
+                        {
+                            // Mark the mannequin branch here
+                            c.MarkLabel(branchMannequin);
+
+                            // Push the PlayerDrawSet to the stack
+                            c.Emit(OpCodes.Ldarg_0);
+
+                            // Push our playerTexture id to the stack
+                            c.Emit(OpCodes.Ldc_I4, (int)mannequinTexture);
+
+                            // Call our GetCharacterTexture method to place the right texture on the stack
+                            c.EmitDelegate<TexAction<PlayerDrawSet>>(GetCharacterTexture);
+
+                            if (textureValue)
+                            {
+                                c.Emit(OpCodes.Callvirt, typeof(Asset<Texture2D>).GetMethod("get_Value", BindingFlags.Public | BindingFlags.Instance));
+                            }
                         }
                     }
 
                     // Check if we need the end branch
-                    if (playerTexture != GenshinTextureType.None || characterTexture != GenshinTextureType.None)
+                    if (playerTexture != GenshinTextureType.None || characterTexture != GenshinTextureType.None || mannequinTexture != GenshinTextureType.None)
                     {
                         // Mark the end branch here
                         c.MarkLabel(end);
@@ -1842,11 +1911,20 @@ public enum GenshinTextureType
     None,
 
     // Textures used for the player
+    Player_SkinHead,
     Player_SkinTorso,            // 3
     Player_SkinLegs,             // 10
     Player_SkinHandsBack,        // 5
     Player_SkinHandsFront,       // 9
     Player_SkinArmsAndHands,     // 7
+
+    // Textures used for Mannequin/Womannequin
+    Mannequin_SkinHead,
+    Mannequin_SkinTorso,
+    Mannequin_SkinHandsBack,
+    Mannequin_SkinHandsFront, 
+    Mannequin_SkinArmsAndHands,
+    Mannequin_SkinLegs,
 
     // Textures used for the characters
     Character_SkinHead,          // 0

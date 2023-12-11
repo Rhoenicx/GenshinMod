@@ -1,4 +1,5 @@
 ﻿using GenshinMod.Common.GameObjects;
+using GenshinMod.Common.ModObjects.ModSystems;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -10,6 +11,12 @@ public class Klee_Head : ModItem
 {
     public override void SetStaticDefaults()
     {
+        // Register Klee's Head equip slot
+        GenshinPlayerSystem.RegisterEquipSlot(EquipType.Head, Item.headSlot, new GenshinEquipSettings()
+        {
+            characterID = GenshinCharacterID.Klee
+        });
+
         ArmorIDs.Head.Sets.DrawFullHair[Item.headSlot] = true;
         ArmorIDs.Head.Sets.DrawHatHair[Item.headSlot] = false;
     }
