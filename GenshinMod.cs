@@ -1,11 +1,7 @@
 using GenshinMod.Common.Configs;
-using GenshinMod.Common.ModObjects;
-using GenshinMod.Common.ModObjects.ModSystems;
+using GenshinMod.Common.ModObjects.Players;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Terraria;
 using Terraria.Chat;
 using Terraria.ID;

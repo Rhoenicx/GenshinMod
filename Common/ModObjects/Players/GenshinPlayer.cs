@@ -18,7 +18,7 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using static Terraria.Player;
 
-namespace GenshinMod.Common.ModObjects
+namespace GenshinMod.Common.ModObjects.Players
 {
     public class GenshinPlayer : ModPlayer
     {
@@ -39,8 +39,8 @@ namespace GenshinMod.Common.ModObjects
         // The amount of characters that cen be controlled
         public static int MaxTeamSize
         {
-            get => Main.netMode == NetmodeID.SinglePlayer 
-                ? GenshinMod.GenshinConfigClient.MaxTeamSize 
+            get => Main.netMode == NetmodeID.SinglePlayer
+                ? GenshinMod.GenshinConfigClient.MaxTeamSize
                 : GenshinMod.GenshinConfigServer.MaxTeamSize;
         }
 
@@ -49,6 +49,9 @@ namespace GenshinMod.Common.ModObjects
         //---------------------------------------------------------------------------------------
         // Public team/character variables used outside this class
         //---------------------------------------------------------------------------------------
+
+        // If the player has a character active (not terrarian)
+        public bool CharacterActive => _selectedCharacterID != GenshinCharacterID.Terrarian;
 
         // The CharacterID of the current character on field.
         public GenshinCharacterID CurrentCharacterID => _selectedCharacterID;
@@ -557,7 +560,7 @@ namespace GenshinMod.Common.ModObjects
 
         public override void UpdateDyes()
         {
-            
+
         }
 
         public override void PreUpdateBuffs()
@@ -596,12 +599,12 @@ namespace GenshinMod.Common.ModObjects
 
         public override void PostUpdateRunSpeeds()
         {
-            
+
         }
 
         public override void PreUpdateMovement()
         {
-            
+
         }
 
         public override bool PreItemCheck()
@@ -621,7 +624,7 @@ namespace GenshinMod.Common.ModObjects
 
         public override void PostItemCheck()
         {
-            
+
         }
 
         public override void FrameEffects()
@@ -639,6 +642,9 @@ namespace GenshinMod.Common.ModObjects
         //------------------------------------------------------------------------------------
         //-------------------------------- ModPlayer Hits ------------------------------------
         //------------------------------------------------------------------------------------
+        #region ModPlayer_Hits
+
+        #endregion
 
         //------------------------------------------------------------------------------------
         //-------------------------- Character team functions --------------------------------
@@ -660,13 +666,13 @@ namespace GenshinMod.Common.ModObjects
 
             // Remove duplicate entries from CharacterTeam
             _teamComposition = _teamComposition.Distinct().ToList();
-            
+
             // Verify the length of the _teamComposition, this cannot exceed MaxTeamSize
             if (_teamComposition.Count > MaxTeamSize)
             {
                 _teamComposition.RemoveRange(MaxTeamSize, _teamComposition.Count - MaxTeamSize);
             }
-            
+
             // Verify if the characters in the _teamComposition are contained in Characters.
             for (int i = _teamComposition.Count - 1; i >= 0; i--)
             {
@@ -706,7 +712,7 @@ namespace GenshinMod.Common.ModObjects
                     _teamComposition.Add(_characters.First(c => c.Key == GenshinCharacterID.Terrarian).Key);
                 }
             }
-            
+
             // Verify if the selected Character is contained in the _teamComposition
             if (!_teamComposition.Contains(_selectedCharacterID))
             {
@@ -722,7 +728,7 @@ namespace GenshinMod.Common.ModObjects
         private void AddStartingCharacter(bool otherPlayer = false)
         {
             // For our own player add Lumine or Aether based on the players gender.
-            if (!otherPlayer 
+            if (!otherPlayer
                 && GenshinModeEnabled
                 && !(_characters.ContainsKey(GenshinCharacterID.Lumine)
                 || _characters.ContainsKey(GenshinCharacterID.Aether)))
@@ -753,7 +759,7 @@ namespace GenshinMod.Common.ModObjects
                 && (!_teamComposition.Contains(id)
                 || !_characters.ContainsKey(id)
                 || _characters[id] == null
-                || (_teamComposition.IndexOf(id) >= MaxControllableCharacters)))
+                || _teamComposition.IndexOf(id) >= MaxControllableCharacters))
             {
                 return false;
             }
@@ -866,7 +872,7 @@ namespace GenshinMod.Common.ModObjects
         {
             return Player.ItemAnimationActive
                 || Player.ItemAnimationJustStarted
-                || (!Player.mount.Active && Player.velocity.Y != 0f)
+                || !Player.mount.Active && Player.velocity.Y != 0f
                 || Player.channel
                 || Player.heldProj != -1;
         }
@@ -1141,10 +1147,10 @@ namespace GenshinMod.Common.ModObjects
             // We cannot remove Lumine or Aether, from lore POV
             // and code-wise; removing all character breaks EVERYTHING!
             if (_characters.ContainsKey(id)
-                && ((id != GenshinCharacterID.Lumine
-                && id != GenshinCharacterID.Aether)
-                || (_characters.ContainsKey(GenshinCharacterID.Lumine)
-                && _characters.ContainsKey(GenshinCharacterID.Aether))
+                && (id != GenshinCharacterID.Lumine
+                && id != GenshinCharacterID.Aether
+                || _characters.ContainsKey(GenshinCharacterID.Lumine)
+                && _characters.ContainsKey(GenshinCharacterID.Aether)
                 || Player.whoAmI != Main.myPlayer))
             {
                 _characters.Remove(id);
@@ -1230,7 +1236,7 @@ namespace GenshinMod.Common.ModObjects
             if (!_oldTeamComposition.SequenceEqual(_teamComposition))
             {
                 List<GenshinCharacterID> changes = _teamComposition.Except(_oldTeamComposition).ToList();
-                foreach (GenshinCharacterID id in changes) 
+                foreach (GenshinCharacterID id in changes)
                 {
                     if (_teamComposition.Contains(id))
                     {
@@ -1302,9 +1308,9 @@ namespace GenshinMod.Common.ModObjects
             // Create a request packet and send it.
             ModPacket packet = GenshinMod.Instance.GetPacket();
             packet.Write((byte)GenshinModMessageType.SendGenshinMode);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((bool)GenshinModeEnabled);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(GenshinModeEnabled);
             packet.Send(toPlayer, fromPlayer);
         }
 
@@ -1318,9 +1324,9 @@ namespace GenshinMod.Common.ModObjects
             // Create a request packet and send it.
             ModPacket packet = GenshinMod.Instance.GetPacket();
             packet.Write((byte)GenshinModMessageType.RequestAllCharacterData);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((int)requestPlayer);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(requestPlayer);
             packet.Send(toPlayer, fromPlayer);
         }
 
@@ -1353,9 +1359,9 @@ namespace GenshinMod.Common.ModObjects
             // Create a request packet and send it.
             ModPacket packet = GenshinMod.Instance.GetPacket();
             packet.Write((byte)GenshinModMessageType.RequestCharacter);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((int)requestPlayer);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(requestPlayer);
             packet.Write((int)id);
             packet.Send(toPlayer, fromPlayer);
         }
@@ -1374,9 +1380,9 @@ namespace GenshinMod.Common.ModObjects
             // Prepare and send the packet
             ModPacket packet = Mod.GetPacket();
             packet.Write((byte)GenshinModMessageType.SendTeamComposition);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((int)_teamComposition.Count);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(_teamComposition.Count);
             for (int i = 0; i < _teamComposition.Count; i++)
             {
                 packet.Write((int)_teamComposition[i]);
@@ -1387,14 +1393,14 @@ namespace GenshinMod.Common.ModObjects
         /// <summary>
         /// This hook sends the request packet for the team composition in multiplayer.
         /// </summary>
-        private void RequestTeamComposition(int toPlayer = -1, int fromPlayer = -1, int requestPlayer = -1) 
+        private void RequestTeamComposition(int toPlayer = -1, int fromPlayer = -1, int requestPlayer = -1)
         {
             // Create a request packet and send it.
             ModPacket packet = GenshinMod.Instance.GetPacket();
             packet.Write((byte)GenshinModMessageType.RequestTeamComposition);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((int)requestPlayer);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(requestPlayer);
             packet.Send(toPlayer, fromPlayer);
         }
 
@@ -1413,10 +1419,10 @@ namespace GenshinMod.Common.ModObjects
             // Prepare and send the packet
             ModPacket packet = Mod.GetPacket();
             packet.Write((byte)GenshinModMessageType.SendSelectedCharacter);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
             packet.Write((int)_selectedCharacterID);
-            packet.Write((bool)forced);
+            packet.Write(forced);
             packet.Send(toPlayer, fromPlayer);
         }
 
@@ -1428,9 +1434,9 @@ namespace GenshinMod.Common.ModObjects
             // Create a request packet and send it.
             ModPacket packet = GenshinMod.Instance.GetPacket();
             packet.Write((byte)GenshinModMessageType.RequestSelectedCharacter);
-            packet.Write((int)toPlayer);
-            packet.Write((int)fromPlayer);
-            packet.Write((int)requestPlayer);
+            packet.Write(toPlayer);
+            packet.Write(fromPlayer);
+            packet.Write(requestPlayer);
             packet.Send(toPlayer, fromPlayer);
         }
 
@@ -1476,7 +1482,7 @@ namespace GenshinMod.Common.ModObjects
 
                             break;
                         }
-                        
+
                         // Packet is received on a client, send 
                         SendAllCharacterData(toPlayer, fromPlayer);
                     }
@@ -1484,7 +1490,7 @@ namespace GenshinMod.Common.ModObjects
 
 
                 case GenshinModMessageType.SendCharacter:
-                    { 
+                    {
                         // Read the character id from the packet
                         int id = reader.ReadInt32();
 
@@ -1576,7 +1582,7 @@ namespace GenshinMod.Common.ModObjects
                             {
                                 invalid = true;
                             }
-                            
+
                             if (Enum.IsDefined(typeof(GenshinCharacterID), id)
                                 && !_characters.ContainsKey((GenshinCharacterID)id))
                             {
@@ -1599,7 +1605,7 @@ namespace GenshinMod.Common.ModObjects
                         {
                             RequestTeamComposition(fromPlayer, Main.myPlayer, Player.whoAmI);
                             RequestSelectedCharacter(fromPlayer, Main.myPlayer, Player.whoAmI);
-                            break; 
+                            break;
                         }
 
                         // Run the changes between team hook. To run other client's
@@ -1675,14 +1681,14 @@ namespace GenshinMod.Common.ModObjects
                             invalid = true;
                         }
 
-                        if (Enum.IsDefined(typeof(GenshinCharacterID), id) 
+                        if (Enum.IsDefined(typeof(GenshinCharacterID), id)
                             && !_teamComposition.Contains((GenshinCharacterID)id))
                         {
                             RequestTeamComposition(fromPlayer, Main.myPlayer, Player.whoAmI);
                             invalid = true;
                         }
-                        
-                        if (invalid) 
+
+                        if (invalid)
                         {
                             RequestSelectedCharacter(fromPlayer, Main.myPlayer, Player.whoAmI);
                             break;

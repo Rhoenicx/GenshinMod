@@ -1,4 +1,5 @@
 ﻿using GenshinMod.Common.GameObjects;
+using GenshinMod.Common.ModObjects.Players;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil;
@@ -1650,8 +1651,6 @@ public class GenshinPlayerSystem : ModSystem
                 c.Emit(OpCodes.Add);
             }
         }
-
-        GenshinMod.Instance.Logger.Debug(il.ToString());
     }
 
     private void IL_PlayerApplySkinCompositeBackArmShirtOffset(ILContext il)

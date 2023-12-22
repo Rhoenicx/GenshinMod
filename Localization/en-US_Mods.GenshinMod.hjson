@@ -135,6 +135,11 @@ Items: {
 		DisplayName: Noelle_ Legs
 		Tooltip: ""
 	}
+
+	ElementalSword: {
+		DisplayName: Elemental Sword
+		Tooltip: ""
+	}
 }
 
 Configs: {

@@ -19,8 +19,8 @@
   <ItemGroup>
     <Folder Include="Common\GlobalObjects\" />
     <Folder Include="Common\Loadables\" />
-    <Folder Include="Common\UI\" />
     <Folder Include="Common\Static\" />
+    <Folder Include="Common\UI\ElementIcons\" />
     <Folder Include="Content\Characters\Albedo\" />
   </ItemGroup>
 </Project>

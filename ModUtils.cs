@@ -16,3 +16,22 @@ public static class ModUtils
     }
 }
 
+public enum GenshinWeaponType : Byte
+{
+    None,
+    Sword,
+    Claymore,
+    Polearm,
+    Bow,
+    Catalyst
+}
+
+public enum GenshinRarity : byte
+{
+    OneStar,
+    TwoStar,
+    ThreeStar,
+    FourStar,
+    FiveStar
+}
+

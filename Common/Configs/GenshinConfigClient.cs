@@ -1,4 +1,4 @@
-﻿using GenshinMod.Common.ModObjects;
+﻿using GenshinMod.Common.ModObjects.Players;
 using System;
 using System.ComponentModel;
 using Terraria;

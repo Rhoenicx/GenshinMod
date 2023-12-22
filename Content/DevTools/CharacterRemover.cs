@@ -1,4 +1,4 @@
-﻿using GenshinMod.Common.ModObjects;
+﻿using GenshinMod.Common.ModObjects.Players;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;

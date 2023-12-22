@@ -1,5 +1,5 @@
-﻿using GenshinMod.Common.ModObjects;
-using GenshinMod.Common.ModObjects.ModSystems;
+﻿using GenshinMod.Common.ModObjects.ModSystems;
+using GenshinMod.Common.ModObjects.Players;
 using Microsoft.Xna.Framework;
 using System.Linq;
 using Terraria;

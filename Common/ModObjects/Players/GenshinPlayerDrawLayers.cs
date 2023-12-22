@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 using static Terraria.ModLoader.ModContent;
 using Terraria.ID;
 
-namespace GenshinMod.Common.ModObjects;
+namespace GenshinMod.Common.ModObjects.Players;
 
 public class GenshinMiscBackLayer : PlayerDrawLayer
 {
@@ -332,9 +332,9 @@ public class GenshinMiscHeadLayer : PlayerDrawLayer
         }
 
         if (drawInfo.drawPlayer.GetModPlayer<GenshinPlayer>().CurrentCharacterID == GenshinCharacterID.Jean
-            || ((drawInfo.drawPlayer.GetModPlayer<GenshinPlayer>().CurrentCharacterID == GenshinCharacterID.Terrarian
-            && drawInfo.drawPlayer.hair == Content.Characters.Jean.Hair.Jean_Hair.ID)
-            && drawInfo.drawPlayer.head == -1))
+            || drawInfo.drawPlayer.GetModPlayer<GenshinPlayer>().CurrentCharacterID == GenshinCharacterID.Terrarian
+            && drawInfo.drawPlayer.hair == Content.Characters.Jean.Hair.Jean_Hair.ID
+            && drawInfo.drawPlayer.head == -1)
         {
             // Vanilla position code
             int drawX = (int)(drawInfo.Position.X - Main.screenPosition.X - drawInfo.drawPlayer.bodyFrame.Width / 2f + drawInfo.drawPlayer.width / 2f);

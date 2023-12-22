@@ -1,6 +1,5 @@
-﻿using GenshinMod.Common.ModObjects;
-using GenshinMod.Common.ModObjects.ModSystems;
-using System;
+﻿using GenshinMod.Common.ModObjects.ModSystems;
+using GenshinMod.Common.ModObjects.Players;
 using System.IO;
 using Terraria;
 using Terraria.DataStructures;
@@ -31,18 +30,23 @@ public abstract class GenshinCharacter
     // Character details
     public GenshinRarity Rarity;
     public GenshinWeaponType WeaponType;
-    public GenshinElement Vision;
+    public DamageClass Vision;
 
     // The levels of the character
     public const int LevelMax = 90;
     public int Level = 1;
     public long Experience = 0;
 
-    // Attack
+    // NA Attack 
     public int NormalAttackAmount = 1;
+    public int CurrentAttack = 0;
+    public bool AutoswingNA = true; // NA autoswing
+    public bool AutoRepeatNACombo = false; // Automatically repeats NA combo
+
+    // CA Attack
     public int StaminaChargedAttack = 1;
-    public bool Autoswing = true; // NA autoswing
     public bool AutoswingCA = false; // CA autoswing
+    public bool AutoRepeatCACombo = false; // Automatically repeats CA combo
     public bool HoldableSkill = false; // Skill hold
 
     // Talents
@@ -445,41 +449,4 @@ public abstract class GenshinCharacter
     }
 
     #endregion
-}
-
-public enum GenshinRarity : byte
-{ 
-    OneStar,
-    TwoStar,
-    ThreeStar,
-    FourStar,
-    FiveStar
-}
-
-public enum GenshinWeaponType : Byte
-{
-    None,
-    Sword,
-    Claymore,
-    Polearm,
-    Bow,
-    Catalyst
-}
-
-public enum GenshinElement : byte 
-{ 
-    None,
-    Physical,
-    Anemo,
-    Geo,
-    Pyro,
-    Hydro,
-    Dendro,
-    Cryo,
-    Electro
-}
-
-public enum GenshinReaction : byte
-{ 
-    
 }
