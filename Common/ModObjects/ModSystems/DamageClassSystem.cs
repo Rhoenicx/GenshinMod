@@ -222,40 +222,64 @@ public class DamageClassSystem : ModSystem
 
 }
 
-#region ElementApplication
-public class GenshinElementApplication
-{
-    public const float Weak = 1f;
-    public const float Medium = 1.5f;
-    public const float Strong = 2f;
-    public const float VeryStrong = 4f;
-    public const float Extreme = 8f;
+#region AttackTypes
+public enum AttackType : byte
+{ 
+    None,
+    NormalAttack,
+    ChargedAttack,
+    ElementalSkill,
+    ElementalBurst,
+    Special
+}
+
+#endregion
+
+#region AttackWeight
+public enum AttackWeight : byte 
+{ 
+    None,
+    Arrow,
+    Light,
+    Medium,
+    Strong,
+    VeryStrong
 }
 #endregion
 
+#region ElementApplication
+public enum ElementApplication : byte
+{ 
+    None, // 0U
+    Weak, // 1U
+    Medium, // 1.5U
+    Strong, // 2U
+    VeryStrong, // 4U
+    Extreme // 8U
+}
+#endregion
 
 #region DamageClasses
 public abstract class GenshinDamageClass : DamageClass
 {
     // The color of this DamageText popup
     public abstract Color GetColor();
-    public abstract bool CanDrawIcon();
-    protected virtual Asset<Texture2D> GetIconTexture() => TextureAssets.MagicPixel;
 
     // Inheritance of stats, do not inherit any other stats from damage classes other than GenshinGeneric
     public override StatInheritanceData GetModifierInheritance(DamageClass damageClass)
     {
         return damageClass == ModContent.GetInstance<GenshinGeneric>() ? StatInheritanceData.Full : StatInheritanceData.None;
     }
+}
 
-    // Draw the icon above NPC
+public abstract class GenshinElementDamageClass : GenshinDamageClass
+{
+    public virtual bool CanDrawIcon() => false;
+
+    protected virtual Asset<Texture2D> GetIconTexture() => TextureAssets.MagicPixel;
+
     public void DrawIcon(SpriteBatch spriteBatch, Vector2 position, Color drawColor)
     {
-        if (!CanDrawIcon())
-        {
-            return;
-        }
-
         Texture2D iconTexture = GetIconTexture().Value;
 
         spriteBatch.Draw(
@@ -271,19 +295,24 @@ public abstract class GenshinDamageClass : DamageClass
     }
 }
 
+public abstract class GenshinReactionDamageClass : GenshinDamageClass
+{ 
+
+}
+
 public class GenshinGeneric : DamageClass
 {
     public override StatInheritanceData GetModifierInheritance(DamageClass damageClass) => StatInheritanceData.None;
 }
 
-public class GenshinPhysical : GenshinDamageClass
+public class GenshinPhysical : GenshinElementDamageClass
 {
     private Color _color = new(200, 200, 200);
     public override Color GetColor() => _color;
     public override bool CanDrawIcon() => false;
 }
 
-public class GenshinPyro : GenshinDamageClass
+public class GenshinPyro : GenshinElementDamageClass
 {
     private Color _color = new(255, 155, 0);
     private Asset<Texture2D> _iconTexture;
@@ -296,7 +325,7 @@ public class GenshinPyro : GenshinDamageClass
     }
 }
 
-public class GenshinHydro : GenshinDamageClass
+public class GenshinHydro : GenshinElementDamageClass
 {
     private Color _color = new(51, 204, 255);
     private Asset<Texture2D> _iconTexture;
@@ -309,7 +338,7 @@ public class GenshinHydro : GenshinDamageClass
     }
 }
 
-public class GenshinCryo : GenshinDamageClass
+public class GenshinCryo : GenshinElementDamageClass
 {
     private Color _color = new(153, 255, 255);
     private Asset<Texture2D> _iconTexture;
@@ -322,7 +351,7 @@ public class GenshinCryo : GenshinDamageClass
     }
 }
 
-public class GenshinAnemo : GenshinDamageClass
+public class GenshinAnemo : GenshinElementDamageClass
 {
     private Color _color = new(102, 255, 204);
     private Asset<Texture2D> _iconTexture;
@@ -335,7 +364,7 @@ public class GenshinAnemo : GenshinDamageClass
     }
 }
 
-public class GenshinGeo : GenshinDamageClass
+public class GenshinGeo : GenshinElementDamageClass
 {
     private Color _color = new(255, 204, 102);
     private Asset<Texture2D> _iconTexture;
@@ -348,7 +377,7 @@ public class GenshinGeo : GenshinDamageClass
     }
 }
 
-public class GenshinDendro : GenshinDamageClass
+public class GenshinDendro : GenshinElementDamageClass
 {
     private Color _color = new(0, 234, 82);
     private Asset<Texture2D> _iconTexture;
@@ -361,7 +390,7 @@ public class GenshinDendro : GenshinDamageClass
     }
 }
 
-public class GenshinElectro : GenshinDamageClass
+public class GenshinElectro : GenshinElementDamageClass
 {
     private Color _color = new(225, 155, 255);
     private Asset<Texture2D> _iconTexture;
@@ -374,117 +403,100 @@ public class GenshinElectro : GenshinDamageClass
     }
 }
 
-public class GenshinVaporize : GenshinDamageClass
+public class GenshinVaporize : GenshinReactionDamageClass
 {
     private Color _color = new(255, 204, 102);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinOverloaded : GenshinDamageClass
+public class GenshinOverloaded : GenshinReactionDamageClass
 {
     private Color _color = new(255, 128, 155);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinMelt : GenshinDamageClass
+public class GenshinMelt : GenshinReactionDamageClass
 {
     private Color _color = new(255, 204, 102);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinElectrocharged : GenshinDamageClass
+public class GenshinElectrocharged : GenshinReactionDamageClass
 {
     private Color _color = new(225, 155, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinFrozen : GenshinDamageClass
+public class GenshinFrozen : GenshinReactionDamageClass
 {
     private Color _color = new(153, 255, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinSuperconduct : GenshinDamageClass
+public class GenshinSuperconduct : GenshinReactionDamageClass
 {
     private Color _color = new(180, 180, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinSwirl : GenshinDamageClass
+public class GenshinSwirl : GenshinReactionDamageClass
 {
     private Color _color = new(102, 255, 204);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinCrystallize : GenshinDamageClass
+public class GenshinCrystallize : GenshinReactionDamageClass
 {
     private Color _color = new(255, 204, 102);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinBurning : GenshinDamageClass
+public class GenshinBurning : GenshinReactionDamageClass
 {
     private Color _color = new(255, 255, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinBloom : GenshinDamageClass
+public class GenshinBloom : GenshinReactionDamageClass
 {
     private Color _color = new(0, 234, 82);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinHyperbloom : GenshinDamageClass
+public class GenshinHyperbloom : GenshinReactionDamageClass
 {
     private Color _color = new(225, 155, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinBurgeon : GenshinDamageClass
+public class GenshinBurgeon : GenshinReactionDamageClass
 {
     private Color _color = new(255, 155, 0);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinQuicken : GenshinDamageClass
+public class GenshinQuicken : GenshinReactionDamageClass
 {
     private Color _color = new(0, 234, 82);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinAggravate : GenshinDamageClass
+public class GenshinAggravate : GenshinReactionDamageClass
 {
     private Color _color = new(225, 155, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinSpread : GenshinDamageClass
+public class GenshinSpread : GenshinReactionDamageClass
 {
     private Color _color = new(0, 234, 82);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
-public class GenshinShatter : GenshinDamageClass
+public class GenshinShatter : GenshinReactionDamageClass
 {
     private Color _color = new(255, 255, 255);
     public override Color GetColor() => _color;
-    public override bool CanDrawIcon() => false;
 }
 
 #endregion
-

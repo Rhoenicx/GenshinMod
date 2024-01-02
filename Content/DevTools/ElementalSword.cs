@@ -48,7 +48,7 @@ public class ElementalSword : GenshinWeapon
                 Element = 0;
             }
 
-            InfuseWeapon(GetDamageClass(), GenshinElementApplication.Weak, 600);
+            InfuseWeapon(GetDamageClass(), ElementApplication.Weak, 600);
 
             return false;
         }

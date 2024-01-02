@@ -8,6 +8,12 @@ using System.Collections.Generic;
 using GenshinMod.Common.ModObjects.Shields;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
+using System;
+using GenshinMod.Common.ModObjects.Weapons;
+using GenshinMod.Common.ModObjects.Players;
+using GenshinMod.Common.ModObjects.Projectiles;
+using GenshinMod.Common.GameObjects;
+using Microsoft.CodeAnalysis;
 
 namespace GenshinMod.Common.ModObjects.NPCs
 {
@@ -53,7 +59,7 @@ namespace GenshinMod.Common.ModObjects.NPCs
             // Get the elements that affect this NPC
             List<DamageClass> affectedElements = ElementalTimer.Keys
                 .Where(d => ElementalTimer[d] > 0 
-                && d is GenshinDamageClass damageClass 
+                && d is GenshinElementDamageClass damageClass 
                 && damageClass.CanDrawIcon()).ToList();
 
             // Add shields
@@ -62,7 +68,7 @@ namespace GenshinMod.Common.ModObjects.NPCs
                 foreach (GenshinShieldNPC shield in Shields)
                 {
                     if (!affectedElements.Contains(shield.DamageType())
-                        && shield.DamageType() is GenshinDamageClass damageClass
+                        && shield.DamageType() is GenshinElementDamageClass damageClass
                         && damageClass.CanDrawIcon())
                     {
                         affectedElements.Add(shield.DamageType());
@@ -83,7 +89,7 @@ namespace GenshinMod.Common.ModObjects.NPCs
             // Draw the icons
             for (int i = 0; i < count; i++)
             {
-                if (affectedElements[i] is GenshinDamageClass damageClass)
+                if (affectedElements[i] is GenshinElementDamageClass damageClass)
                 {
                     damageClass.DrawIcon(spriteBatch, position + new Vector2(elementSymbolDrawOffsetX, 0f) * i, drawColor);
                 }
@@ -158,23 +164,79 @@ namespace GenshinMod.Common.ModObjects.NPCs
 
         public override void ModifyHitByItem(NPC npc, Player player, Item item, ref NPC.HitModifiers modifiers)
         {
-            base.ModifyHitByItem(npc, player, item, ref modifiers);
-        }
-
-        public override void OnHitByItem(NPC npc, Player player, Item item, NPC.HitInfo hit, int damageDone)
-        {
-            base.OnHitByItem(npc, player, item, hit, damageDone);
+            // The item is not a GenshinProjectile => return
+            if (item.ModItem is not GenshinWeapon genshinWeapon)
+            {
+                return;
+            }
         }
 
         public override void ModifyHitByProjectile(NPC npc, Projectile projectile, ref NPC.HitModifiers modifiers)
         {
-            base.ModifyHitByProjectile(npc, projectile, ref modifiers);
+            // The projectile is not a GenshinProjectile => return
+            if (projectile.ModProjectile is not GenshinProjectile genshinProjectile)
+            {
+                return;
+            }
+
+            // The owner of this projectile is a Player
+            if (!genshinProjectile.BelongsToNPC
+                && Main.player[projectile.owner].active
+                && genshinProjectile.CharacterOwnerID != GenshinCharacterID.None
+                && Main.player[projectile.owner].TryGetModPlayer(out GenshinPlayer genshinPlayer)
+                && genshinPlayer.GenshinModeEnabled
+                && genshinPlayer.TryGetTeamCharacter(genshinProjectile.CharacterOwnerID, out GenshinCharacter genshinCharacter))
+            {
+                // Re-calculate the base damage of the projectile
+                projectile.damage = (int)(genshinCharacter.GetBaseDamage(genshinProjectile.HitType)
+                    * genshinCharacter.GetBaseDamageMultiplier())
+                    + genshinCharacter.GetAdditiveBaseDamageBonus();
+
+                return;
+            }
+
+            // The Owner of this projectile is an NPC
+            if (genshinProjectile.BelongsToNPC
+                && Main.npc[genshinProjectile.NPCOwnerID].active
+                && Main.npc[genshinProjectile.NPCOwnerID].TryGetGlobalNPC(out GenshinGlobalNPC genshinGlobalNPC))
+            {
+                // Re-calculate the base damage of the projectile
+                projectile.damage = (int)(genshinGlobalNPC.GetBaseDamage(genshinProjectile.HitType) 
+                    * genshinGlobalNPC.GetBaseDamageMultiplier())
+                    + genshinGlobalNPC.GetAdditiveBaseDamageBonus();
+
+                return;
+            }
         }
 
-        public override void OnHitByProjectile(NPC npc, Projectile projectile, NPC.HitInfo hit, int damageDone)
+        /// <summary>
+        /// Part of the damage calculation: Gets the 'Base DMG'
+        /// of an attack. Place a switch with each AttackType
+        /// in here, and return the Base Damage. This can
+        /// scale with ATK, DEF, HP, EM etc...
+        /// Returns 1 by default.
+        /// </summary>
+        public virtual int GetBaseDamage(AttackType hitType)
         {
-            base.OnHitByProjectile(npc, projectile, hit, damageDone);
+            return 1;
         }
+
+        public virtual float GetBaseDamageMultiplier()
+        {
+            return 1f;
+        }
+
+        public virtual int GetAdditiveBaseDamageBonus()
+        {
+            return 0;
+        }
+
+        /// <summary>
+        /// Calculates the amount of additional passive defense this NPC should
+        /// have over under-leveled characters.
+        /// </summary>
+        public float GetDefenseMultiplier(float defIgnore, int characterLevel) =>
+            (characterLevel + 100) / (characterLevel + 100 + (Level + 100) * (1f - Math.Min(ReductionDefense, 0.9f)) * (1f - defIgnore));
 
         /// <summary>
         /// Gets the resistance this NPC has against the given damageType
@@ -193,6 +255,60 @@ namespace GenshinMod.Common.ModObjects.NPCs
         public bool AffectedByElement(DamageClass damageType, bool ignoreShield = false) =>
             !ignoreShield && HasShield() && TopShieldElement() == damageType 
             || ElementalTimer != null && ElementalTimer.TryGetValue(damageType, out int timer) && timer > 0;
+
+        /// <summary>
+        /// Tries to prepare all the data before an actual Element will
+        /// be applied to the target.
+        /// </summary>
+        private void PrepareHitWithItem(NPC npc, Player player, Item item, ref NPC.HitModifiers modifiers)
+        {
+            // Prepare variables
+            GenshinPlayer genshinPlayer = player.GetModPlayer<GenshinPlayer>();
+            GenshinCharacterID characterID = GenshinCharacterID.None;
+            GenshinWeaponType weaponType = GenshinWeaponType.None;
+            ElementApplication application = ElementApplication.None;
+            AttackType attackType = AttackType.None;
+            AttackWeight attackWeight = AttackWeight.None;
+
+            // The Item that hit the target does not belong to our mod
+            if (item.ModItem is not GenshinWeapon genshinWeapon
+                || !genshinPlayer.Player.active)
+            {
+                return;
+            }
+
+            // Get the stats of the Item
+            genshinWeapon.GetWeaponStats(out characterID, out weaponType, out application, out attackType, out attackWeight);
+        }
+
+        private void PrepareHitWithProjectile(NPC npc, Projectile projectile, ref NPC.HitModifiers modifiers)
+        {
+            // Prepare variables
+            GenshinPlayer genshinPlayer = Main.player[projectile.owner].GetModPlayer<GenshinPlayer>();
+            GenshinCharacterID characterID = GenshinCharacterID.None;
+            GenshinWeaponType weaponType = GenshinWeaponType.None;
+            ElementApplication application = ElementApplication.None;
+            AttackType attackType = AttackType.None;
+            AttackWeight attackWeight = AttackWeight.None;
+
+            // The projectile that hit the target does not belong to our mod
+            if (projectile.ModProjectile is not GenshinProjectile genshinProjectile)
+            {
+                return;
+            }
+
+            // The hit is caused by the server (no players and characters) or from another NPC
+            if (!genshinPlayer.Player.active)
+
+            // get the stats of the projectile
+            genshinProjectile.GetProjectileStats(out characterID, out weaponType, out application, out attackType, out attackWeight);
+        }
+
+        private void ApplyHit(NPC npc, ref NPC.HitModifiers modifiers, DamageClass element, float application, float auraTax = 1f)
+        { 
+        
+        }
+
 
         /// <summary>
         /// Checks if this NPC has any shields

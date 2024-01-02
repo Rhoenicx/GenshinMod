@@ -319,6 +319,33 @@ public abstract class GenshinCharacter
         }
     }
 
+    /// <summary>
+    /// Part of the damage calculation: Gets the 'Base DMG'
+    /// of an attack. Place a switch with each AttackType
+    /// in here, and return the Base Damage. This can
+    /// scale with ATK, DEF, HP, EM etc...
+    /// Returns 1 by default.
+    /// </summary>
+    public virtual int GetBaseDamage(AttackType hitType)
+    {
+        return 1;
+    }
+
+    public virtual float GetBaseDamageMultiplier()
+    {
+        return 1f;
+    }
+
+    public virtual int GetAdditiveBaseDamageBonus()
+    {
+        return 0;
+    }
+
+    /// <summary>
+    /// Determines if the current character is in-use, this
+    /// prevents switching to another character.
+    /// Returns false by default.
+    /// </summary>
     public virtual bool InUse()
     {
         return false;

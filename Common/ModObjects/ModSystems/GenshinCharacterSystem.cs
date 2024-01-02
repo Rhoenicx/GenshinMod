@@ -30,7 +30,10 @@ public class GenshinCharacterSystem : ModSystem
         // Create character objects and it them to the Character Archive
         foreach (GenshinCharacterID id in Enum.GetValues(typeof(GenshinCharacterID)))
         {
-            AddCharacterToArchive(id, GetGenshinCharacter(id, null));
+            if (id != GenshinCharacterID.None)
+            {
+                AddCharacterToArchive(id, GetGenshinCharacter(id, null));
+            }
         }
 
         // Run Load() hook on all the characters
@@ -53,6 +56,9 @@ public class GenshinCharacterSystem : ModSystem
     {
         switch (id)
         {
+            case GenshinCharacterID.Terrarian: 
+                return new Content.Characters.Terrarian.CharacterTerrarian(plr);
+
             case GenshinCharacterID.Aether:
                 return new Content.Characters.Aether.CharacterAether(plr);
 
@@ -84,8 +90,7 @@ public class GenshinCharacterSystem : ModSystem
                 return new Content.Characters.Noelle.CharacterNoelle(plr);
             
             default:
-                // This is a empty / dummy character for multiplayer fail-safe
-                return new Content.Characters.Terrarian.CharacterTerrarian(plr);
+                return null;
         }
     }
 
@@ -102,7 +107,8 @@ public class GenshinCharacterSystem : ModSystem
 }
 
 public enum GenshinCharacterID
-{ 
+{
+    None,
     Terrarian,
     Aether,
     Lumine,

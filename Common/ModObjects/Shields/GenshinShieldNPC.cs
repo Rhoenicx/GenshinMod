@@ -42,7 +42,7 @@ namespace GenshinMod.Common.ModObjects.Shields
         
         }
 
-        public virtual void StrikeShield(DamageClass damageType, float application = GenshinElementApplication.Weak)
+        public virtual void StrikeShield(DamageClass damageType, ElementApplication application = ElementApplication.Weak)
         { 
             
         }

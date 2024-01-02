@@ -68,6 +68,35 @@ namespace GenshinMod.Common.ModObjects.Players
         // All characters owned by this player, read only!
         public IReadOnlyDictionary<GenshinCharacterID, GenshinCharacter> ObtainedCharacters => _characters;
 
+        // Helper to get the character from the player instance
+        public bool TryGetCharacter(GenshinCharacterID characterID, out GenshinCharacter genshinCharacter)
+        {
+            genshinCharacter = null;
+
+            if (!_characters.ContainsKey(characterID) || _characters[characterID] == null)
+            {
+                return false;
+            }
+
+            genshinCharacter = _characters[characterID];
+            return true;
+        }
+
+        // Helper to get the character from the player instance's team
+        public bool TryGetTeamCharacter(GenshinCharacterID characterID, out GenshinCharacter genshinCharacter)
+        {
+            genshinCharacter = null;
+
+            if (!_characters.ContainsKey(characterID) || _characters[characterID] == null
+                || !_teamComposition.Contains(characterID))
+            {
+                return false;
+            }
+
+            genshinCharacter = _characters[characterID];
+            return true;
+        }
+
         //---------------------------------------------------------------------------------------
         // Private team/character variables used internally. DO NOT MODIFY OUTSIDE THIS CLASS
         //---------------------------------------------------------------------------------------
@@ -325,6 +354,11 @@ namespace GenshinMod.Common.ModObjects.Players
 
                     // Create a new instance of the character object based on the data read
                     GenshinCharacter loadedCharacter = GenshinCharacterSystem.GetGenshinCharacter((GenshinCharacterID)id, Main.LocalPlayer);
+
+                    if (loadedCharacter == null)
+                    {
+                        continue;
+                    }
 
                     // Run the LoadData() hook of this character
                     loadedCharacter.LoadData(characterTag);
@@ -643,7 +677,11 @@ namespace GenshinMod.Common.ModObjects.Players
         //-------------------------------- ModPlayer Hits ------------------------------------
         //------------------------------------------------------------------------------------
         #region ModPlayer_Hits
-
+        public override void ModifyHitNPCWithItem(Item item, NPC target, ref NPC.HitModifiers modifiers)
+        {
+            Main.NewText("Player");
+            base.ModifyHitNPCWithItem(item, target, ref modifiers);
+        }
         #endregion
 
         //------------------------------------------------------------------------------------
@@ -658,6 +696,18 @@ namespace GenshinMod.Common.ModObjects.Players
         /// </summary>
         private void VerifyTeam(bool otherPlayer = false)
         {
+            // Make sure the player has no 'None' characters, this entry
+            // is reserved for internal use and does not exist.
+            if (_characters.ContainsKey(GenshinCharacterID.None))
+            { 
+                _characters.Remove(GenshinCharacterID.None);
+            }
+
+            if (_teamComposition.Contains(GenshinCharacterID.None))
+            {
+                _teamComposition.RemoveAll(c => c == GenshinCharacterID.None);
+            }
+
             // Check if the Character dictionary has at least 1 character
             if (!_characters.Any())
             {
@@ -1104,6 +1154,12 @@ namespace GenshinMod.Common.ModObjects.Players
         /// </summary>
         public void AddCharacter(GenshinCharacterID id)
         {
+            // Added character cannot be the 'None' character
+            if (id == GenshinCharacterID.None)
+            {
+                return;
+            }
+
             // check if the player already owns this character
             if (_characters.ContainsKey(id))
             {
@@ -1494,8 +1550,10 @@ namespace GenshinMod.Common.ModObjects.Players
                         // Read the character id from the packet
                         int id = reader.ReadInt32();
 
-                        // Check if the received id is part of the CharacterID enumerator
-                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id))
+                        // Check if the received id is part of the CharacterID enumerator,
+                        // Or is the none character
+                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id)
+                            || (GenshinCharacterID)id == GenshinCharacterID.None)
                         {
                             break;
                         }
@@ -1530,7 +1588,8 @@ namespace GenshinMod.Common.ModObjects.Players
                         int id = reader.ReadInt32();
 
                         // Check if the given id is part of the enumerator
-                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id))
+                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id)
+                            || (GenshinCharacterID)id == GenshinCharacterID.None)
                         {
                             break;
                         }
@@ -1668,7 +1727,8 @@ namespace GenshinMod.Common.ModObjects.Players
 
                         bool invalid = false;
 
-                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id))
+                        if (!Enum.IsDefined(typeof(GenshinCharacterID), id)
+                            || (GenshinCharacterID)id == GenshinCharacterID.None)
                         {
                             invalid = true;
                         }
